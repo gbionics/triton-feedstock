@@ -24,18 +24,21 @@ source:
 
 build:
   number: ${{ build_number }}
-  string: cuda${{ cuda_compiler_version | version_to_buildstring }}py${{ python | version_to_buildstring }}h${{ hash }}_${{ build_number }}
+  string: '{%- if cuda_compiler_version != "None" -%}cuda${{ cuda_compiler_version | version_to_buildstring }}py${{ python | version_to_buildstring }}h${{ hash }}_${{ build_number }}{%- elif hip_compiler_version != "None" -%}rocm${{ rocm_version | replace(".", "") }}py${{ python | version_to_buildstring }}h${{ hash }}_${{ build_number }}{%- endif -%}'
   skip:
     # No success enabling Windows build as of 3.1.0:
     # https://github.com/conda-forge/triton-feedstock/pull/29#issuecomment-2564371725
     - win
-    # TODO: CPU-only support still under development
-    - match(cuda_compiler_version, "==None")
+    # TODO: CPU-only support still under development, build GPU-backed variants only
+    - match(cuda_compiler_version, "==None") and match(hip_compiler_version, "==None")
 
 requirements:
   build:
     - ${{ compiler('cxx') }}
-    - ${{ compiler('cuda') }}
+    - if: cuda_compiler_version != "None"
+      then: ${{ compiler('cuda') }}
+    - if: hip_compiler_version != "None"
+      then: ${{ compiler('hip') }}
     - if: linux and aarch64 and cuda_compiler_version != "None"
       then: arm-variant * ${{ arm_variant_type }} 
     - ${{ stdlib('c') }}
@@ -56,15 +59,29 @@ requirements:
     - zlib
     - zstd  # for llvm
     - nlohmann_json
-    - cuda-cupti-dev
-    - cuda-version ${{ cuda_compiler_version }}.*
+    - if: cuda_compiler_version != "None"
+      then:
+        - cuda-cupti-dev
+        - cuda-version ${{ cuda_compiler_version }}.*
+    - if: hip_compiler_version != "None"
+      then:
+        # Keep rocm version selected by variant and provide runtime/compiler bits for AMD backend.
+        - rocm-core ${{ rocm_version }}.*
+        - hip-runtime-amd
+        - rocminfo
   run:
     - python
     - setuptools
-    - cuda-nvcc-tools
-    - cuda-cuobjdump
-    - cuda-cudart
-    - cuda-cupti
+    - if: cuda_compiler_version != "None"
+      then:
+        - cuda-nvcc-tools
+        - cuda-cuobjdump
+        - cuda-cudart
+        - cuda-cupti
+    - if: hip_compiler_version != "None"
+      then:
+        - rocm-core ${{ rocm_version }}.*
+        - hip-runtime-amd
 
 tests:
   - python:
