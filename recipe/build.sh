@@ -26,6 +26,10 @@ export MAX_JOBS=$CPU_COUNT
 # no easy way of passing this, not really worth a whole patch
 sed -i -e '/TRITON_BUILD_UT/s:\bON:OFF:' CMakeLists.txt
 
+# LLVM's bundled benchmark adds -pedantic-errors, which breaks with newer
+# clang when parsing __COUNTER__ in C++11 mode (-Wc2y-extensions).
+sed -i -e 's/-pedantic-errors//g' llvm-project/third-party/benchmark/CMakeLists.txt
+
 CMAKE_HOST_ARGS=(
     -DCMAKE_BUILD_TYPE=Release
     -DLLVM_BUILD_UTILS=ON
