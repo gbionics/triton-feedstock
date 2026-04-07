@@ -11,15 +11,6 @@ export TRITON_OFFLINE_BUILD=1
 export JSON_SYSPATH=$PREFIX
 export PYBIND11_SYSPATH=$SP_DIR/pybind11
 
-# only some of them are actually used currently, but set all just in case
-export TRITON_PTXAS_PATH=$PREFIX/bin/ptxas
-export TRITON_CUOBJDUMP_PATH=$PREFIX/bin/cuobjdump
-export TRITON_NVDISASM_PATH=$PREFIX/bin/nvdisasm
-export TRITON_CUDACRT_PATH=$PREFIX
-export TRITON_CUDART_PATH=$PREFIX
-export TRITON_CUPTI_INCLUDE_PATH=$PREFIX/include
-export TRITON_CUPTI_LIB_PATH=$PREFIX/lib
-
 export MAX_JOBS=$CPU_COUNT
 
 # the build does not run C++ unittests, and they implicitly fetch gtest
