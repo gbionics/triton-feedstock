@@ -16,6 +16,12 @@ export PYBIND11_SYSPATH=$SP_DIR/pybind11
 
 export MAX_JOBS=$CPU_COUNT
 
+# Proton currently expects NVIDIA CUDA/CUPTI headers when enabled.
+# Disable it for ROCm builds to avoid hard dependency on cuda.h/cupti.h.
+if [[ "${hip_compiler_version:-None}" != "None" ]]; then
+    export TRITON_BUILD_PROTON=OFF
+fi
+
 # the build does not run C++ unittests, and they implicitly fetch gtest
 # no easy way of passing this, not really worth a whole patch
 sed -i -e '/TRITON_BUILD_UT/s:\bON:OFF:' CMakeLists.txt
