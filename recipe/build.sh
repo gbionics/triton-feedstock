@@ -3,7 +3,10 @@
 set -ex
 
 # remove outdated vendored headers
-rm -rf $SRC_DIR/python/triton/third_party
+# These should be necessary, but it is temporary commented
+# out as cuda headers are needed even for rocm builds,
+# and the vendored headers are necessary in that case.
+# rm -rf $SRC_DIR/python/triton/third_party
 
 # disable downloading dependencies entirely
 export TRITON_OFFLINE_BUILD=1
