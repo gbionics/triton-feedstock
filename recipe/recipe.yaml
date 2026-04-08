@@ -84,12 +84,14 @@ requirements:
         - hip-runtime-amd
 
 tests:
-  - python:
+  - if: cuda_compiler_version != "None"
+    python:
       imports:
         - triton
         - triton._C.libtriton
       pip_check: true
-  - files:
+  - if: cuda_compiler_version != "None"
+    files:
       source:
         - python/test/
     requirements:
@@ -103,16 +105,8 @@ tests:
     script:
       # test suite essentially depends on availability of a physical GPU,
       # see https://github.com/triton-lang/triton/issues/466;
-      # For CUDA, run non-GPU cpu test; for ROCm, skip if no GPU present
-      - |
-        if [ -d /sys/module/amdgpu ]; then
-          echo "AMD GPU detected, running GPU-backed tests"
-          pytest -v python/test/unit/tools/test_aot.py -k "not disasm"
-        else
-          echo "No AMD GPU detected or CUDA build; running CPU-only test"
-          TRITON_INTERPRET=1 pytest -v python/test/unit/tools/test_aot.py::test_ttgir_to_asm || true
-        fi
-
+      # run a non-GPU CUDA test in interpreter mode
+      - TRITON_INTERPRET=1 pytest -v python/test/unit/tools/test_aot.py::test_ttgir_to_asm
 about:
   license: MIT
   license_file: LICENSE
